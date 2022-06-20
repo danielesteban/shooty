@@ -4,13 +4,13 @@ import {
   Color,
   FogExp2,
   MathUtils,
-  MeshBasicMaterial,
   PerspectiveCamera,
   Scene,
   sRGBEncoding,
   Vector3,
   WebGLRenderer,
 } from 'three';
+import ChunkMaterial from './core/chunkmaterial.js';
 import Dome from './renderables/dome.js';
 import Input from './core/input.js';
 import PostProcessing from './core/postprocessing.js';
@@ -35,53 +35,9 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 }, false);
 
-const chunkMaterial = new MeshBasicMaterial({ vertexColors: true });
-chunkMaterial.step = { value: 0 };
-chunkMaterial.onBeforeCompile = (shader) => {
-  shader.uniforms.step = chunkMaterial.step;
-  shader.vertexShader = shader.vertexShader
-    .replace(
-      '#include <common>',
-      [
-        '#include <common>',
-        'varying vec2 gridPosition;',
-        'uniform float step;',
-      ].join('\n')
-    )
-    .replace(
-      '#include <begin_vertex>',
-      [
-        '#include <begin_vertex>',
-        'vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;',
-        'transformed.x *= 1.01 + sin(step * 2.0 * (1.0 - fract(wp.y))) * -0.01;',
-        'transformed.x += sin(step * 4.0 * fract(wp.y)) * 0.2;',
-        'gridPosition = wp.xz / 0.05;',
-      ].join('\n')
-    );
-  shader.fragmentShader = shader.fragmentShader
-    .replace(
-      '#include <common>',
-      [
-        '#include <common>',
-        'varying vec2 gridPosition;',
-        'float line(vec2 position) {',
-        '  vec2 coord = abs(fract(position - 0.5) - 0.5) / fwidth(position);',
-        '  return 1.0 - min(min(coord.x, coord.y), 1.0);',
-        '}',
-      ].join('\n')
-    )
-    .replace(
-      'vec4 diffuseColor = vec4( diffuse, opacity );',
-      [
-        'vec4 diffuseColor = vec4( diffuse, opacity );',
-        'diffuseColor.xyz += line(gridPosition) * 2.0;'
-      ].join('\n')
-    );
-};
-
 const world = new World({
+  chunkMaterial: new ChunkMaterial(),
   chunkSize: 32,
-  chunkMaterial,
   renderRadius: 5,
   worldgen: (chunkSize) => new Worker({
     options: { chunkSize, seed:  Math.floor(Math.random() * 2147483647) },
@@ -121,7 +77,7 @@ const fps = {
 };
 const input = new Input({ target: renderer.domElement });
 
-camera.position.set(1, 0.8, 0);
+camera.position.set(1, 0.6, 0);
 camera.rotation.set(0, 0, 0, 'YXZ');
 const anchor = new Vector3();
 const offset = new Vector3(0, 0, world.renderRadius * world.chunkSize * -1).multiply(world.scale);
@@ -137,12 +93,12 @@ renderer.setAnimationLoop(() => {
   dome.position.y = 0;
   starfield.position.copy(dome.position);
 
-  chunkMaterial.step.value += delta * 0.5;
   projectiles.onAnimationTick(delta);
   if (input.onAnimationTick(camera, time)) {
     projectiles.shoot(input.origin, input.direction);
   }
 
+  world.chunkMaterial.uniforms.time.value = time;
   world.updateChunks(anchor.addVectors(camera.position, offset));
   postprocessing.render(renderer, scene, camera);
 
