@@ -35,7 +35,11 @@ class Projectiles extends Group {
           p--;
           l--;
           if (hit) {
-            this.blast(projectile.position, 4 + Math.floor(Math.random() * 3), hit.color || projectile.color);
+            this.blast({
+              color: hit.color || projectile.color,
+              origin: projectile.position,
+              radius: 4 + Math.floor(Math.random() * 3),
+            });
             this.dispatchEvent({ type: 'hit', point: projectile.position, object: hit });
           }
           break;
@@ -53,7 +57,7 @@ class Projectiles extends Group {
     }
   }
 
-  blast(origin, radius, color) {
+  blast({ color, origin, radius }) {
     const { explosions, sfx, world } = this;
     world.updateVolume(origin, radius, 0, _air);
     sfx.playAt('blast', origin, 'lowpass', 1000 + Math.random() * 1000);
@@ -62,7 +66,7 @@ class Projectiles extends Group {
     this.add(explosion);
   }
 
-  shoot(origin, direction, color) {
+  shoot({ color, direction, origin }) {
     const { projectiles, sfx } = this;
     sfx.playAt('shot', _voxel.addVectors(origin, direction), 'highpass', 1000 + Math.random() * 1000);
     const projectile = new Projectile({ color, direction, origin });

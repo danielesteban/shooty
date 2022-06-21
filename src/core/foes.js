@@ -25,7 +25,7 @@ class Foes extends Group {
             _direction.x += (Math.random() - 0.5) * 0.5;
             _direction.y += (Math.random() - 0.5) * 0.5;
             _direction.z += (Math.random() - 0.5) * 0.5;
-            projectiles.shoot(foe.position, _direction.normalize(), foe.color);
+            projectiles.shoot({ color: foe.color, direction: _direction.normalize(), origin: foe.position });
           }
         }
       }

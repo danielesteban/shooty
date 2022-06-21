@@ -93,7 +93,9 @@ scene.add(menu);
 let pauseTimer = 0;
 const hurt = postprocessing.screen.material.uniforms.hurt;
 projectiles.addEventListener('hit', ({ point, object }) => {
-  if (gameOver.visible) return;
+  if (gameOver.visible) {
+    return;
+  }
   if (object === camera) {
     hurt.value = 0.5;
     hud.updateHealth(hud.health.value - 1);
@@ -104,7 +106,7 @@ projectiles.addEventListener('hit', ({ point, object }) => {
   } else if (object.isFoe) {
     foes.respawn(object);
     const score = 100;
-    labels.spawn(object.color, point, `${score}`);
+    labels.spawn({ color: object.color, position: point, text: `${score}` });
     hud.updateScore(hud.score.value + score);
   }
 });
@@ -167,7 +169,7 @@ renderer.setAnimationLoop(() => {
       restart();
     }
   } else if (input.onAnimationTick(camera, time)) {
-    projectiles.shoot(input.origin, input.direction, color);
+    projectiles.shoot({ color, direction: input.direction, origin: input.origin });
   }
 
   if (hurt.value > 0) {

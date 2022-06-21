@@ -22,7 +22,7 @@ class Labels extends Group {
     }
   }
 
-  spawn(color, position, text) {
+  spawn({ color, position, text }) {
     const label = new Label({ color, size: 0.1, text });
     label.position.copy(position);
     this.add(label);
