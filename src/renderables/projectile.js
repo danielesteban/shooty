@@ -2,7 +2,9 @@ import {
   BufferAttribute,
   IcosahedronGeometry,
   Mesh,
-  MeshBasicMaterial,
+  ShaderLib,
+  ShaderMaterial,
+  UniformsUtils,
 } from 'three';
 
 class Projectile extends Mesh {
@@ -23,7 +25,14 @@ class Projectile extends Mesh {
   }
 
   static setupMaterial() {
-    Projectile.material = new MeshBasicMaterial({ vertexColors: true });
+    const { uniforms, vertexShader, fragmentShader } = ShaderLib.basic;
+    Projectile.material = new ShaderMaterial({
+      uniforms: UniformsUtils.clone(uniforms),
+      vertexShader,
+      fragmentShader,
+      fog: true,
+      vertexColors: true,
+    });
   }
 
   constructor({ color, direction, origin }) {
@@ -48,7 +57,8 @@ class Projectile extends Mesh {
 
   onBeforeRender() {
     const { color, material } = this;
-    material.color.copy(color);
+    material.uniforms.diffuse.value.copy(color);
+    material.uniformsNeedUpdate = true;
   }
 }
 
