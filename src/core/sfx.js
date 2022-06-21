@@ -12,12 +12,8 @@ class SFX extends Group {
     const loader = new AudioLoader();
     this.pools = {};
     Promise.all([
-      ...[
-        'https://cdn.glitch.global/86d98710-81ec-4249-b9ad-eb879e6ff8e3/ambient.ogg?v=1655649673221',
-        'https://cdn.glitch.global/bc15c731-6015-4f5e-ad16-e41a29ceb25c/blast.ogg?v=1655343214300',
-        'https://cdn.glitch.global/bc15c731-6015-4f5e-ad16-e41a29ceb25c/shot.ogg?v=1655343225893',
-      ].map((url) => (
-        new Promise((resolve, reject) => loader.load(url, resolve, null, reject))
+      ...['ambient', 'blast', 'shot'].map((sound) => (
+        new Promise((resolve, reject) => loader.load(`/sounds/${sound}.ogg`, resolve, null, reject))
       )),
       new Promise((resolve) => {
         const onFirstInteraction = () => {
