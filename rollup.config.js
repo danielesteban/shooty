@@ -23,7 +23,6 @@ export default {
     }),
     resolve({
       browser: true,
-      moduleDirectories: [path.join(__dirname, 'node_modules')],
     }),
     postcss({
       extract: 'app.css',
