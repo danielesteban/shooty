@@ -1,4 +1,5 @@
 import {
+  BufferAttribute,
   IcosahedronGeometry,
   Mesh,
   MeshBasicMaterial,
@@ -9,11 +10,20 @@ class Projectile extends Mesh {
     const geometry = new IcosahedronGeometry(0.05, 2);
     geometry.deleteAttribute('normal');
     geometry.deleteAttribute('uv');
+    const color = new BufferAttribute(new Float32Array(geometry.getAttribute('position').count * 3), 3);
+    let light;
+    for (let i = 0; i < color.count; i++) {
+      if (i % 3 === 0) {
+        light = 1 - Math.random() * 0.1;
+      }
+      color.setXYZ(i, light, light, light);
+    }
+    geometry.setAttribute('color', color);
     Projectile.geometry = geometry;
   }
 
   static setupMaterial() {
-    Projectile.material = new MeshBasicMaterial();
+    Projectile.material = new MeshBasicMaterial({ vertexColors: true });
   }
 
   constructor({ color, direction, origin }) {

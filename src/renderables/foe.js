@@ -16,16 +16,22 @@ class Foe extends Mesh {
     const geometries = [];
     {
       const geometry = new IcosahedronGeometry(0.1, 2);
+      geometry.deleteAttribute('normal');
+      geometry.deleteAttribute('uv');
       geometries.push(geometry);
     }
     {
       const geometry = new ConeGeometry(0.06, 0.2, 16);
+      geometry.deleteAttribute('normal');
+      geometry.deleteAttribute('uv');
       geometry.rotateZ(Math.PI * -0.5);
       geometry.translate(0.15, 0, 0);
       geometries.push(geometry.toNonIndexed());
     }
     {
       const geometry = new ConeGeometry(0.06, 0.2, 16);
+      geometry.deleteAttribute('normal');
+      geometry.deleteAttribute('uv');
       geometry.rotateZ(Math.PI * 0.5);
       geometry.translate(-0.15, 0, 0);
       geometries.push(geometry.toNonIndexed());

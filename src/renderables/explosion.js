@@ -23,7 +23,7 @@ class Explosion extends Mesh {
       let light;
       for (let i = 0; i < count; i += 1) {
         if (i % 3 === 0) {
-          light = 0.8 - Math.random() * 0.1;
+          light = 1 - Math.random() * 0.1;
         }
         color.setXYZ(i, light, light, light);
       }
