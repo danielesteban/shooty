@@ -1,11 +1,6 @@
-import {
-  Group,
-  IcosahedronGeometry,
-  Mesh,
-  MeshBasicMaterial,
-  Vector3,
-} from 'three';
-import Explosion from './explosion.js';
+import { Group, Vector3 } from 'three';
+import Explosion from '../renderables/explosion.js';
+import Projectile from '../renderables/projectile.js';
 
 const _air = { r: 255, g: 255, b: 127 };
 const _chunk = new Vector3();
@@ -15,35 +10,33 @@ class Projectiles extends Group {
   constructor({ sfx, world }) {
     super();
     this.matrixAutoUpdate = false;
-    this.projectile = new Mesh(new IcosahedronGeometry(0.05, 2), new MeshBasicMaterial());
     this.sfx = sfx;
     this.world = world;
     this.explosions = [];
     this.projectiles = [];
+    this.targets = [];
   }
     
   onAnimationTick(delta) {
-    const { explosions, projectiles, sfx, world } = this;
-    const iterations = 10;
+    const { explosions, projectiles, sfx, targets, world } = this;
+    const iterations = 2;
     const step = (20 / iterations) * delta;
-    for (let c = 0, l = projectiles.length; c < l; c++) {
-      const projectile = projectiles[c];
+    for (let p = 0, l = projectiles.length; p < l; p++) {
+      const projectile = projectiles[p];
       for (let i = 0; i < iterations; i++) {
-        projectile.position.addScaledVector(projectile.direction, step);
-        projectile.distance += step;
-        const hit = this.test(projectile.position);
+        projectile.onAnimationTick(step);
+        let hit = this.test(projectile.position) && world;
+        if (!hit && i === 0) {
+          hit = targets.find((target) => projectile.position.distanceTo(target.position) < 0.2);
+        }
         if (hit || projectile.distance > 100) {
           this.remove(projectile);
-          projectiles.splice(c, 1);
-          c--;
+          projectiles.splice(p, 1);
+          p--;
           l--;
           if (hit) {
-            const r = 4 + Math.floor(Math.random() * 3);
-            world.updateVolume(projectile.position, r, 0, _air);
-            sfx.playAt('blast', projectile.position, 'lowpass', 1000 + Math.random() * 1000);
-            const explosion = new Explosion(projectile.position);
-            explosions.push(explosion);
-            this.add(explosion);
+            this.blast(projectile.position, 4 + Math.floor(Math.random() * 3), hit.color || projectile.color);
+            this.dispatchEvent({ type: 'hit', point: projectile.position, object: hit });
           }
           break;
         }
@@ -60,13 +53,19 @@ class Projectiles extends Group {
     }
   }
 
-  shoot(origin, direction) {
+  blast(origin, radius, color) {
+    const { explosions, sfx, world } = this;
+    world.updateVolume(origin, radius, 0, _air);
+    sfx.playAt('blast', origin, 'lowpass', 1000 + Math.random() * 1000);
+    const explosion = new Explosion({ color, origin });
+    explosions.push(explosion);
+    this.add(explosion);
+  }
+
+  shoot(origin, direction, color) {
     const { projectiles, sfx } = this;
     sfx.playAt('shot', _voxel.addVectors(origin, direction), 'highpass', 1000 + Math.random() * 1000);
-    const projectile = this.projectile.clone();
-    projectile.direction = direction.clone();
-    projectile.position.copy(origin).add(direction);
-    projectile.distance = 0;
+    const projectile = new Projectile({ color, direction, origin });
     projectiles.push(projectile);
     this.add(projectile);
   }

@@ -24,6 +24,24 @@ canvas {
   text-align: center;
 }
 
+#hud {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translate(-50%, 0);
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 1.25rem;
+}
+
+#hud > div {
+  display: flex;
+  width: 7rem;
+  justify-content: center;
+}
+
 #info {
   position: absolute;
   bottom: 1rem;

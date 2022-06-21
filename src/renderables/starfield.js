@@ -52,6 +52,7 @@ class Starfield extends Points {
       transparent: true,
     });
     material.color = material.uniforms.diffuse.value;
+    material.opacity = 0.8;
     material.isPointsMaterial = true;
     material.sizeAttenuation = true;
     Starfield.material = material;

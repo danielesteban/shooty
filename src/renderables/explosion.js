@@ -83,7 +83,7 @@ class Explosion extends Mesh {
     });
   }
 
-  constructor(position) {
+  constructor({ color, origin }) {
     if (!Explosion.geometry) {
       Explosion.setupGeometry();
     }
@@ -95,7 +95,8 @@ class Explosion extends Mesh {
       Explosion.material 
     );
     this.frustumCulled = false;
-    this.position.copy(position);
+    this.color = color;
+    this.position.copy(origin);
     this.rotation.set((Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2);
     this.scale.setScalar(0.2);
     this.updateMatrixWorld();
@@ -110,7 +111,8 @@ class Explosion extends Mesh {
   }
 
   onBeforeRender() {
-    const { material, step } = this;
+    const { color, material, step } = this;
+    material.uniforms.diffuse.value.copy(color);
     material.uniforms.step.value = step;
     material.uniformsNeedUpdate = true;
   }
