@@ -18,7 +18,7 @@ class Projectiles extends Group {
   }
     
   onAnimationTick(delta) {
-    const { explosions, projectiles, sfx, targets, world } = this;
+    const { explosions, projectiles, targets, world } = this;
     const iterations = 2;
     const step = (20 / iterations) * delta;
     for (let p = 0, l = projectiles.length; p < l; p++) {
