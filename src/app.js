@@ -11,19 +11,19 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three';
-import ChunkMaterial from './core/chunkmaterial.js';
-import Dome from './renderables/dome.js';
 import Foes from './core/foes.js';
 import Hud from './core/hud.js';
 import Input from './core/input.js';
 import Labels from './core/labels.js';
-import Label from './renderables/label.js';
 import PostProcessing from './core/postprocessing.js';
 import Projectiles from './core/projectiles.js';
 import SFX from './core/sfx.js';
-import Starfield from './renderables/starfield.js';
 import Worker from './core/worker.js';
-import Worldgen from 'web-worker:./core/worldgen.js';
+import ChunkMaterial from './renderables/chunkmaterial.js';
+import Dome from './renderables/dome.js';
+import Label from './renderables/label.js';
+import Starfield from './renderables/starfield.js';
+import Worldgen from 'web-worker:./workers/worldgen.js';
 import './app.css';
 
 const camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);
