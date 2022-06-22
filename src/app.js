@@ -16,6 +16,7 @@ import Hud from './core/hud.js';
 import Input from './core/input.js';
 import Labels from './core/labels.js';
 import PostProcessing from './core/postprocessing.js';
+import Powerups from './core/powerups.js';
 import Projectiles from './core/projectiles.js';
 import SFX from './core/sfx.js';
 import Worker from './core/worker.js';
@@ -81,6 +82,9 @@ scene.add(projectiles);
 const foes = new Foes({ count: 16, projectiles });
 scene.add(foes);
 
+const powerups = new Powerups({ count: 4, projectiles });
+scene.add(powerups);
+
 const gameOver = new Label({ size: 0.5, text: 'Game Over' });
 gameOver.visible = false;
 scene.add(gameOver);
@@ -108,11 +112,19 @@ projectiles.addEventListener('hit', ({ point, object }) => {
       gameOver.visible = true;
       pauseTimer = 3;
     }
-  } else if (object.isFoe) {
-    foes.respawn(object);
-    const score = 100;
+  } else if (object.isFoe || object.isPowerup) {
+    let score = 100;
+    if (object.isFoe) {
+      foes.respawn(object);
+    } else {
+      score = 50;
+      object.visible = false;
+    }
     labels.spawn({ color: object.color, position: point, text: `${score}` });
     hud.updateScore(hud.score.value + score);
+    if (object.isPowerup && hud.health.value < Hud.maxHealth) {
+      hud.updateHealth(hud.health.value + 1);
+    }
   }
 });
 projectiles.targets.push(camera);
@@ -165,6 +177,7 @@ renderer.setAnimationLoop(() => {
 
   foes.onAnimationTick(dome.position, camera.position, isPaused, delta, time);
   labels.onAnimationTick(delta);
+  powerups.onAnimationTick(dome.position, delta, time);
   projectiles.onAnimationTick(delta);
 
   if (isPaused) {
