@@ -14,7 +14,7 @@ import { mergeBufferGeometries, mergeVertices } from 'three/examples/jsm/utils/B
 
 class Foe extends Mesh {
   static setupModels() {
-    Foe.models = Array.from({ length: 7 }, (v, model) => {
+    Foe.models = Array.from({ length: 6 }, (v, model) => {
       const geometries = [];
       const push = (geometry, light = 1) => {
         geometry.deleteAttribute('normal');
@@ -34,30 +34,27 @@ class Foe extends Mesh {
         geometries.push(geometry);
         return geometry;
       };
-      if (model < 4) {
+      if (model < 3) {
         push(new IcosahedronGeometry(0.05, 2));
       } else {
         push(new TorusGeometry(0.035, 0.015, 8, 16));
       }
-      switch (model) {
-        case 1:
-        case 4:
+      const wings = model % 3;
+      switch (wings) {
+        case 0:
           for (let x = -1; x <= 1; x += 2) {
             const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16), 0.75);
             geometry.rotateZ(Math.PI * 0.5 * -x);
             geometry.translate(0.075 * x, 0, 0);
           }
           break;
-        case 2:
-        case 3:
-        case 5:
-        case 6: {
+        case 1:
+        case 2: {
           const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16), 0.75);
-          const inverted = model === 3 || model === 6;
-          if (inverted) {
+          if (wings === 2) {
             geometry.rotateZ(Math.PI);
           }
-          geometry.translate(0, 0.075 * (inverted ? -1 : 1), 0);
+          geometry.translate(0, 0.075 * (wings === 2 ? -1 : 1), 0);
           break;
         }
       }
