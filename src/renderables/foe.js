@@ -12,43 +12,48 @@ import {
 import { mergeBufferGeometries, mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 class Foe extends Mesh {
-  static setupGeometry() {
-    const geometries = [];
-    {
-      const geometry = new IcosahedronGeometry(0.1, 2);
-      geometry.deleteAttribute('normal');
-      geometry.deleteAttribute('uv');
-      geometries.push(geometry);
-    }
-    {
-      const geometry = new ConeGeometry(0.06, 0.2, 16);
-      geometry.deleteAttribute('normal');
-      geometry.deleteAttribute('uv');
-      geometry.rotateZ(Math.PI * -0.5);
-      geometry.translate(0.15, 0, 0);
-      geometries.push(geometry.toNonIndexed());
-    }
-    {
-      const geometry = new ConeGeometry(0.06, 0.2, 16);
-      geometry.deleteAttribute('normal');
-      geometry.deleteAttribute('uv');
-      geometry.rotateZ(Math.PI * 0.5);
-      geometry.translate(-0.15, 0, 0);
-      geometries.push(geometry.toNonIndexed());
-    }
-    const merged = mergeBufferGeometries(geometries);
-    const color = new BufferAttribute(new Float32Array(merged.getAttribute('position').count * 3), 3);
-    let light;
-    for (let i = 0; i < color.count; i++) {
-      if (i % 3 === 0) {
-        light = 1 - Math.random() * 0.5;
+  static setupModels() {
+    Foe.models = Array.from({ length: 4 }, (v, model) => {
+      const geometries = [];
+      const push = (geometry, light = 1) => {
+        geometry.deleteAttribute('normal');
+        geometry.deleteAttribute('uv');
+        if (geometry.index) {
+          geometry = geometry.toNonIndexed();
+        }
+        const color = new BufferAttribute(new Float32Array(geometry.getAttribute('position').count * 3), 3);
+        let l;
+        for (let i = 0; i < color.count; i++) {
+          if (i % 3 === 0) {
+            l = (1 - Math.random() * 0.5) * light;
+          }
+          color.setXYZ(i, l, l, l);
+        }
+        geometry.setAttribute('color', color);
+        geometries.push(geometry);
+        return geometry;
+      };
+      push(new IcosahedronGeometry(0.05, 2));
+      switch (model) {
+        case 1:
+          for (let x = -1; x <= 1; x += 2) {
+            const geometry = push(new ConeGeometry(0.03, 0.1, 16), 0.5);
+            geometry.rotateZ(Math.PI * 0.5 * -x);
+            geometry.translate(0.075 * x, 0, 0);
+          }
+          break;
+        case 2:
+        case 3: {
+          const geometry = push(new ConeGeometry(0.03, 0.1, 16), 0.5);
+          if (model === 3) {
+            geometry.rotateZ(Math.PI);
+          }
+          geometry.translate(0, 0.075 * (model === 3 ? -1 : 1), 0);
+          break;
+        }
       }
-      color.setXYZ(i, light, light, light);
-    }
-    merged.setAttribute('color', color);
-    const geometry = mergeVertices(merged);
-    geometry.scale(0.5, 0.5, 0.5);
-    Foe.geometry = geometry;
+      return mergeVertices(mergeBufferGeometries(geometries));
+    });
   }
 
   static setupMaterial() {
@@ -99,15 +104,15 @@ class Foe extends Mesh {
   }
 
   constructor() {
-    if (!Foe.geometry) {
-      Foe.setupGeometry();
+    if (!Foe.models) {
+      Foe.setupModels();
     }
     if (!Foe.material) {
       Foe.setupMaterial();
     }
-    super(Foe.geometry, Foe.material);
+    super(undefined, Foe.material);
     this.isFoe = true;
-    this.color = (new Color()).setHSL(Math.random(), 0.4 + Math.random() * 0.2, 0.4 + Math.random() * 0.2).convertSRGBToLinear();
+    this.color = new Color();
     this.offset = new Vector3();
     this.rotation.set(0, 0, 0, 'ZXY');
   }
@@ -116,6 +121,13 @@ class Foe extends Mesh {
     const { color, material } = this;
     material.uniforms.diffuse.value.copy(color);
     material.uniformsNeedUpdate = true;
+  }
+
+  reset() {
+    const { color, scale } = this;
+    this.geometry = Foe.models[Math.floor(Math.random() * Foe.models.length)];
+    color.setHSL(Math.random(), 0.4 + Math.random() * 0.2, 0.4 + Math.random() * 0.2).convertSRGBToLinear();
+    scale.setScalar(1 + Math.random());
   }
 }
 

@@ -51,10 +51,10 @@ class Foes extends Group {
   }
 
   respawn(foe) {
-    foe.firingTimer = Math.random() * 2;
+    foe.reset();
+    foe.firingTimer = 1 + Math.random() * 2;
     foe.minZ = -2 - Math.random();
     foe.speed = 1 + Math.random() * 2;
-    foe.scale.setScalar(1 + Math.random());
     foe.offset.set((Math.random() - 0.5) * 2, 1.2 + (Math.random() - 0.5) * 2, -16 - Math.random() * 16);
   }
 }
