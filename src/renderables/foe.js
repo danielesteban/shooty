@@ -43,20 +43,19 @@ class Foe extends Mesh {
       switch (wings) {
         case 0:
           for (let x = -1; x <= 1; x += 2) {
-            const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16), 0.75);
+            const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16, true), 0.75);
             geometry.rotateZ(Math.PI * 0.5 * -x);
             geometry.translate(0.075 * x, 0, 0);
           }
           break;
         case 1:
-        case 2: {
-          const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16), 0.75);
-          if (wings === 2) {
-            geometry.rotateZ(Math.PI);
+        case 2: 
+          for (let x = -1; x <= 1; x += 2) {
+            const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16, true), 0.75);
+            geometry.rotateZ((wings === 2 ? Math.PI : 0) + Math.PI * 0.25 * x * (wings === 2 ? 1 : -1));
+            geometry.translate(0.05 * x, 0.06 * (wings === 2 ? -1 : 1), 0);
           }
-          geometry.translate(0, 0.075 * (wings === 2 ? -1 : 1), 0);
           break;
-        }
       }
       return mergeVertices(mergeBufferGeometries(geometries));
     });
