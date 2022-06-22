@@ -94,8 +94,8 @@ scene.add(menu);
 {
   const title = new Label({ size: 0.8, text: 'Shooty' });
   menu.add(title);
-  const play = new Label({ size: 0.2, text: 'Click to play' });
-  play.position.set(0, -0.8, 0.8);
+  const play = new Label({ size: 0.1, text: 'Click to play' });
+  play.position.set(0, -0.8, 1);
   menu.add(play);
 }
 
