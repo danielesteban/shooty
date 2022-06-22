@@ -123,7 +123,6 @@ class Foe extends Mesh {
     this.isFoe = true;
     this.color = new Color();
     this.offset = new Vector3();
-    this.rotation.set(0, 0, 0, 'ZXY');
     this.time = 0;
     this.visible = false;
     this.wiggle = new Vector3();
