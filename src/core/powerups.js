@@ -5,9 +5,10 @@ class Powerups extends Group {
   constructor({ count, projectiles }) {
     super();
     this.matrixAutoUpdate = false;
-    this.projectiles = projectiles;
     for (let i = 0; i < count; i++) {
-      this.spawn();
+      const powerup = new Powerup();
+      projectiles.targets.push(powerup);
+      this.add(powerup);
     }
   }
 
@@ -32,13 +33,6 @@ class Powerups extends Group {
     children.forEach((powerup) => {
       powerup.visible = false;
     });
-  }
-
-  spawn() {
-    const { projectiles } = this;
-    const powerup = new Powerup();
-    projectiles.targets.push(powerup);
-    this.add(powerup);
   }
 }
 

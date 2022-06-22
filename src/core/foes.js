@@ -10,7 +10,9 @@ class Foes extends Group {
     this.matrixAutoUpdate = false;
     this.projectiles = projectiles;
     for (let i = 0; i < count; i++) {
-      this.spawn();
+      const foe = new Foe();
+      projectiles.targets.push(foe);
+      this.add(foe);
     }
   }
 
@@ -65,13 +67,6 @@ class Foes extends Group {
     children.forEach((foe) => {
       foe.visible = false;
     });
-  }
-
-  spawn() {
-    const { projectiles } = this;
-    const foe = new Foe();
-    projectiles.targets.push(foe);
-    this.add(foe);
   }
 }
 
