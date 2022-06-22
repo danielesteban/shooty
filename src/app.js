@@ -101,7 +101,7 @@ scene.add(menu);
 
 let pauseTimer = 0;
 const hurt = postprocessing.screen.material.uniforms.hurt;
-projectiles.addEventListener('hit', ({ object, owner, point }) => {
+projectiles.addEventListener('hit', ({ color, object, owner, point }) => {
   if (gameOver.visible) {
     return;
   }
@@ -113,15 +113,10 @@ projectiles.addEventListener('hit', ({ object, owner, point }) => {
       pauseTimer = 3;
     }
   } else if (object.isFoe || object.isPowerup) {
-    let score = 100;
-    if (object.isFoe) {
-      foes.respawn(object);
-    } else {
-      score = 50;
-      object.visible = false;
-    }
+    object.visible = false;
     if (owner === camera) {
-      labels.spawn({ color: object.color, position: point, text: `${score}` });
+      const score = object.isFoe ? 100 : 50;
+      labels.spawn({ color, position: point, text: `${score}` });
       hud.updateScore(hud.score.value + score);
       if (object.isPowerup && hud.health.value < Hud.maxHealth) {
         hud.updateHealth(hud.health.value + 1);

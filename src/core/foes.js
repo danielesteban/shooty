@@ -17,6 +17,17 @@ class Foes extends Group {
   onAnimationTick(anchor, target, isPaused, delta, time) {
     const { children, projectiles } = this;
     children.forEach((foe) => {
+      if (!foe.visible) {
+        foe.randomize();
+        foe.firingTimer = 1 + Math.random() * 2;
+        foe.minZ = -2 - Math.random();
+        foe.speed = 1.5 + Math.random();
+        foe.offset.set((Math.random() - 0.5), (Math.random() - 0.5), 0).multiplyScalar(2);
+        foe.offset.y += 1.2;
+        foe.offset.z = -16 - Math.random() * 16;
+        foe.visible = true;
+        foe.wiggle.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(32);
+      }
       if (!isPaused) {
         foe.firingTimer -= delta;
         if (foe.firingTimer <= 0) {
@@ -51,26 +62,16 @@ class Foes extends Group {
 
   reset() {
     const { children } = this;
-    children.forEach((foe) => this.respawn(foe));
+    children.forEach((foe) => {
+      foe.visible = false;
+    });
   }
 
   spawn() {
     const { projectiles } = this;
     const foe = new Foe();
-    this.respawn(foe);
     projectiles.targets.push(foe);
     this.add(foe);
-  }
-
-  respawn(foe) {
-    foe.reset();
-    foe.firingTimer = 1 + Math.random() * 2;
-    foe.minZ = -2 - Math.random();
-    foe.speed = 1.5 + Math.random();
-    foe.offset.set((Math.random() - 0.5), (Math.random() - 0.5), 0).multiplyScalar(2);
-    foe.offset.y += 1.2;
-    foe.offset.z = -16 - Math.random() * 16;
-    foe.wiggle.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(32);
   }
 }
 

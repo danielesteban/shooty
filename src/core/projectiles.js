@@ -44,6 +44,7 @@ class Projectiles extends Group {
             });
             this.dispatchEvent({
               type: 'hit',
+              color: hit.color || projectile.color,
               object: hit,
               owner: projectile.owner,
               point: projectile.position,

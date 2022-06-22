@@ -125,6 +125,7 @@ class Foe extends Mesh {
     this.offset = new Vector3();
     this.rotation.set(0, 0, 0, 'ZXY');
     this.time = 0;
+    this.visible = false;
     this.wiggle = new Vector3();
   }
 
@@ -135,7 +136,7 @@ class Foe extends Mesh {
     material.uniformsNeedUpdate = true;
   }
 
-  reset() {
+  randomize() {
     const { color, scale } = this;
     this.geometry = Foe.models[Math.floor(Math.random() * Foe.models.length)];
     color.setHSL(Math.random(), 0.4 + Math.random() * 0.2, 0.4 + Math.random() * 0.2).convertSRGBToLinear();
