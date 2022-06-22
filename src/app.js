@@ -175,7 +175,7 @@ renderer.setAnimationLoop(() => {
 
   foes.onAnimationTick(dome.position, camera.position, isPaused, delta, time);
   labels.onAnimationTick(delta);
-  powerups.onAnimationTick(dome.position, delta, time);
+  powerups.onAnimationTick(dome.position, time);
   projectiles.onAnimationTick(delta);
 
   if (isPaused) {

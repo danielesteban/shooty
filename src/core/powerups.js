@@ -12,7 +12,7 @@ class Powerups extends Group {
     }
   }
 
-  onAnimationTick(anchor, delta, time) {
+  onAnimationTick(anchor, time) {
     const { children } = this;
     children.forEach((powerup, i) => {
       if (!powerup.visible || powerup.position.z > anchor.z) {
@@ -23,8 +23,7 @@ class Powerups extends Group {
         powerup.visible = true;
       }
       powerup.position.y = powerup.baseY + Math.sin((time + i) * 2) * 0.05;
-      powerup.rotation.y += delta;
-      powerup.rotation.z += delta;
+      powerup.rotation.y = (time + i);
     });
   }
 
