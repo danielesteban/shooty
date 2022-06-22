@@ -55,7 +55,7 @@ class Foes extends Group {
     foe.reset();
     foe.firingTimer = 1 + Math.random() * 2;
     foe.minZ = -2 - Math.random();
-    foe.speed = 1 + Math.random() * 2;
+    foe.speed = 1.5 + Math.random();
     foe.offset.set((Math.random() - 0.5) * 2, 1.2 + (Math.random() - 0.5) * 2, -16 - Math.random() * 16);
   }
 }
