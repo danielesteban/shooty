@@ -55,7 +55,7 @@ const world = new World({
   chunkSize: 32,
   renderRadius: 5,
   worldgen: (chunkSize) => new Worker({
-    options: { chunkSize, seed:  Math.floor(Math.random() * 2147483647) },
+    options: { chunkSize, seed: Math.floor(Math.random() * 2147483647) },
     script: Worldgen,
   }), 
 });
