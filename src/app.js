@@ -160,7 +160,7 @@ renderer.setAnimationLoop(() => {
   const isPaused = gameOver.visible || menu.visible;
 
   if (isPaused) {
-    anchor.set(0, 0.8 + Math.sin(time) * 0.2, -3).add(camera.position);
+    anchor.set(0, 0.7 + Math.sin(time * 0.75) * 0.2, -3).add(camera.position);
     gameOver.position.copy(anchor);
     menu.position.copy(anchor);
   } else {
