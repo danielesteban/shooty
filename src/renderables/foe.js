@@ -127,12 +127,14 @@ class Foe extends Mesh {
     this.isFoe = true;
     this.color = new Color();
     this.offset = new Vector3();
+    this.time = 0;
     this.rotation.set(0, 0, 0, 'ZXY');
   }
 
   onBeforeRender() {
-    const { color, material } = this;
+    const { color, material, time } = this;
     material.uniforms.diffuse.value.copy(color);
+    material.uniforms.time.value = time;
     material.uniformsNeedUpdate = true;
   }
 
