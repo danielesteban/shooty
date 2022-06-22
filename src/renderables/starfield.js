@@ -19,7 +19,7 @@ class Starfield extends Points {
       aux
         .set(
           (Math.random() - 0.5) * 2,
-          0.1 + Math.random(),
+          0.05 + Math.random(),
           -Math.random()
         )
         .normalize()
