@@ -15,7 +15,7 @@ class Foes extends Group {
 
   onAnimationTick(anchor, target, isPaused, delta, time) {
     const { children, projectiles } = this;
-    children.forEach((foe, i) => {
+    children.forEach((foe) => {
       if (!isPaused) {
         foe.firingTimer -= delta;
         if (foe.firingTimer <= 0) {
@@ -31,15 +31,14 @@ class Foes extends Group {
       }
       foe.offset.z = Math.min(foe.offset.z + foe.speed * delta, foe.minZ);
       foe.position.addVectors(anchor, foe.offset);
-      const s = Math.sin(time + i);
-      foe.position.x += s * 0.1;
-      foe.position.y += s * 0.1;
-      foe.position.z += s * 0.1;
+      foe.position.x += Math.sin(time + foe.wiggle.x) * 0.1;
+      foe.position.y += Math.sin(time + foe.wiggle.y) * 0.1;
+      foe.position.z += Math.sin(time + foe.wiggle.z) * 0.1;
       _direction.copy(target);
-      _direction.x += s * 0.5;
-      _direction.y -= Math.sin((time + i) * 0.5) * 0.5;
+      _direction.x += Math.sin(time + foe.wiggle.x) * 0.5;
+      _direction.y += Math.sin((time + foe.wiggle.y) * 0.5) * 0.5;
       foe.lookAt(_direction);
-      foe.time = time + i;
+      foe.time = (time + foe.wiggle.z) * foe.speed;
     });
   }
 
@@ -57,6 +56,7 @@ class Foes extends Group {
     foe.minZ = -2 - Math.random();
     foe.speed = 1.5 + Math.random();
     foe.offset.set((Math.random() - 0.5) * 2, 1.2 + (Math.random() - 0.5) * 2, -16 - Math.random() * 16);
+    foe.wiggle.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(32);
   }
 }
 
