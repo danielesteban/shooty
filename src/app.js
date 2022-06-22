@@ -60,7 +60,9 @@ const world = new World({
   }), 
 });
 world.renderGrid = world.renderGrid.filter(({ x, y, z }) => (
-  x >= -4 && x <= 4 && y >= -1 && y <= 3 && z <= 4 && z >= -4
+  x >= -4 && x <= 4
+  && y >= -1 && y <= 3
+  && z >= -4 && z <= 4
 ));
 world.scale.setScalar(0.05);
 scene.add(world);
