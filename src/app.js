@@ -59,6 +59,9 @@ const world = new World({
     script: Worldgen,
   }), 
 });
+world.renderGrid = world.renderGrid.filter(({ x, y }) => (
+  y >= -1 && y <= 3 && x >= -4 && x <= 4
+));
 world.scale.setScalar(0.05);
 scene.add(world);
 
