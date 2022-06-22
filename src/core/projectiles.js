@@ -27,7 +27,9 @@ class Projectiles extends Group {
         projectile.onAnimationTick(step);
         let hit = this.test(projectile.position) && world;
         if (!hit && i === 0) {
-          hit = targets.find((target) => projectile.position.distanceTo(target.position) < 0.2);
+          hit = targets.find((target) => (
+            target.visible && projectile.position.distanceTo(target.position) < 0.2
+          ));
         }
         if (hit || projectile.distance > 100) {
           this.remove(projectile);

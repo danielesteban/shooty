@@ -136,8 +136,9 @@ camera.rotation.set(0, 0, 0, 'YXZ');
 const restart = () => {
   gameOver.visible = menu.visible = false;
   camera.position.z = 0;
-  foes.children.forEach((foe) => foes.respawn(foe));
   hud.reset();
+  foes.reset();
+  powerups.reset();
   world.reset();
 };
 

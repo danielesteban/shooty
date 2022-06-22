@@ -27,6 +27,13 @@ class Powerups extends Group {
     });
   }
 
+  reset() {
+    const { children } = this;
+    children.forEach((powerup) => {
+      powerup.visible = false;
+    });
+  }
+
   spawn() {
     const { projectiles } = this;
     const powerup = new Powerup();

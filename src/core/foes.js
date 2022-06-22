@@ -49,6 +49,11 @@ class Foes extends Group {
     });
   }
 
+  reset() {
+    const { children } = this;
+    children.forEach((foe) => this.respawn(foe));
+  }
+
   spawn() {
     const { projectiles } = this;
     const foe = new Foe();
