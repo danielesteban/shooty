@@ -37,14 +37,14 @@ class Foe extends Mesh {
       switch (model) {
         case 1:
           for (let x = -1; x <= 1; x += 2) {
-            const geometry = push(new ConeGeometry(0.03, 0.1, 16), 0.5);
+            const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16), 0.75);
             geometry.rotateZ(Math.PI * 0.5 * -x);
             geometry.translate(0.075 * x, 0, 0);
           }
           break;
         case 2:
         case 3: {
-          const geometry = push(new ConeGeometry(0.03, 0.1, 16), 0.5);
+          const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16), 0.75);
           if (model === 3) {
             geometry.rotateZ(Math.PI);
           }
@@ -68,14 +68,18 @@ class Foe extends Mesh {
           '#include <common>',
           [
             '#include <common>',
-            'varying vec2 gridPosition;',
+            'varying vec2 grid;',
+            'uniform float time;',
           ].join('\n')
         )
         .replace(
           '#include <begin_vertex>',
           [
             '#include <begin_vertex>',
-            'gridPosition = position.xz / 0.02;',
+            'grid = position.xz / 0.02;',
+            'float d = sin(time + (position.x + position.y) * 100.0) * 0.05;',
+            'transformed.xyz *= 1.0 + d;',
+            'transformed.y += sin(time * 2.0) * (position.x * position.x);',
           ].join('\n')
         ),
       fragmentShader: fragmentShader
@@ -83,7 +87,7 @@ class Foe extends Mesh {
           '#include <common>',
           [
             '#include <common>',
-            'varying vec2 gridPosition;',
+            'varying vec2 grid;',
             'float line(const in vec2 position) {',
             '  float len = length(position);',
             '  vec3 coord = vec3(abs(fract(position - 0.5) - 0.5) / fwidth(position), abs(fract(len - 0.5) - 0.5) / fwidth(len));',
@@ -95,7 +99,7 @@ class Foe extends Mesh {
           'vec4 diffuseColor = vec4( diffuse, opacity );',
           [
             'vec4 diffuseColor = vec4( diffuse, opacity );',
-            'diffuseColor.xyz *= 1.0 + line(gridPosition);'
+            'diffuseColor.xyz *= 1.0 + line(grid);'
           ].join('\n')
         ),
       fog: true,

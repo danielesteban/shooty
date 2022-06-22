@@ -40,6 +40,7 @@ class Foes extends Group {
       _direction.y -= Math.sin((time + i) * 0.5) * 0.5;
       foe.lookAt(_direction);
     });
+    Foe.material.uniforms.time.value = time;
   }
 
   spawn() {
