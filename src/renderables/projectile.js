@@ -35,7 +35,7 @@ class Projectile extends Mesh {
     });
   }
 
-  constructor({ color, direction, origin }) {
+  constructor({ color, direction, origin, owner }) {
     if (!Projectile.geometry) {
       Projectile.setupGeometry();
     }
@@ -44,6 +44,7 @@ class Projectile extends Mesh {
     }
     super(Projectile.geometry, Projectile.material);
     this.color = color;
+    this.owner = owner;
     this.position.copy(origin).add(direction);
     this.direction = direction.clone();
     this.distance = 0;

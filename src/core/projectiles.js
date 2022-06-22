@@ -40,7 +40,12 @@ class Projectiles extends Group {
               origin: projectile.position,
               radius: 4 + Math.floor(Math.random() * 3),
             });
-            this.dispatchEvent({ type: 'hit', point: projectile.position, object: hit });
+            this.dispatchEvent({
+              type: 'hit',
+              object: hit,
+              owner: projectile.owner,
+              point: projectile.position,
+            });
           }
           break;
         }
@@ -66,10 +71,10 @@ class Projectiles extends Group {
     this.add(explosion);
   }
 
-  shoot({ color, direction, origin }) {
+  shoot({ color, direction, origin, owner }) {
     const { projectiles, sfx } = this;
     sfx.playAt('shot', _voxel.addVectors(origin, direction), 'highpass', 1000 + Math.random() * 1000);
-    const projectile = new Projectile({ color, direction, origin });
+    const projectile = new Projectile({ color, direction, origin, owner });
     projectiles.push(projectile);
     this.add(projectile);
   }

@@ -35,6 +35,7 @@ class Powerup extends Mesh {
     }
     super(Powerup.geometry, Powerup.material);
     this.isPowerup = true;
+    this.color = this.material.color;
     this.visible = false;
   }
 }

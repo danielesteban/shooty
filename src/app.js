@@ -101,7 +101,7 @@ scene.add(menu);
 
 let pauseTimer = 0;
 const hurt = postprocessing.screen.material.uniforms.hurt;
-projectiles.addEventListener('hit', ({ point, object }) => {
+projectiles.addEventListener('hit', ({ object, owner, point }) => {
   if (gameOver.visible) {
     return;
   }
@@ -120,10 +120,12 @@ projectiles.addEventListener('hit', ({ point, object }) => {
       score = 50;
       object.visible = false;
     }
-    labels.spawn({ color: object.color, position: point, text: `${score}` });
-    hud.updateScore(hud.score.value + score);
-    if (object.isPowerup && hud.health.value < Hud.maxHealth) {
-      hud.updateHealth(hud.health.value + 1);
+    if (owner === camera) {
+      labels.spawn({ color: object.color, position: point, text: `${score}` });
+      hud.updateScore(hud.score.value + score);
+      if (object.isPowerup && hud.health.value < Hud.maxHealth) {
+        hud.updateHealth(hud.health.value + 1);
+      }
     }
   }
 });
@@ -187,7 +189,12 @@ renderer.setAnimationLoop(() => {
       restart();
     }
   } else if (input.onAnimationTick(camera, time)) {
-    projectiles.shoot({ color, direction: input.direction, origin: input.origin });
+    projectiles.shoot({
+      color,
+      direction: input.direction,
+      origin: input.origin,
+      owner: camera,
+    });
   }
 
   if (hurt.value > 0) {
