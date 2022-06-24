@@ -1,5 +1,6 @@
 import {
   BufferAttribute,
+  Color,
   IcosahedronGeometry,
   InstancedBufferGeometry,
   InstancedBufferAttribute,
@@ -83,7 +84,7 @@ class Explosion extends Mesh {
     });
   }
 
-  constructor({ color, origin }) {
+  constructor() {
     if (!Explosion.geometry) {
       Explosion.setupGeometry();
     }
@@ -94,14 +95,9 @@ class Explosion extends Mesh {
       Explosion.geometry,
       Explosion.material 
     );
+    this.color = new Color();
     this.frustumCulled = false;
-    this.color = color;
-    this.position.copy(origin);
-    this.rotation.set((Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2);
-    this.scale.setScalar(0.2);
-    this.updateMatrixWorld();
     this.matrixAutoUpdate = false;
-    this.step = 0;
   }
 
   onAnimationTick(delta) {

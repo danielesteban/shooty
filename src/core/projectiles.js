@@ -12,34 +12,40 @@ class Projectiles extends Group {
     this.matrixAutoUpdate = false;
     this.sfx = sfx;
     this.world = world;
+    this.pools = {
+      explosions: [],
+      projectiles: [],
+    };
     this.explosions = [];
     this.projectiles = [];
     this.targets = [];
   }
     
   onAnimationTick(delta) {
-    const { explosions, projectiles, targets, world } = this;
-    const iterations = 2;
-    const step = (20 / iterations) * delta;
+    const { explosions, pools, projectiles, targets, world } = this;
+    const iterations = 4;
+    const step = (100 / iterations) * delta;
     for (let p = 0, l = projectiles.length; p < l; p++) {
       const projectile = projectiles[p];
       for (let i = 0; i < iterations; i++) {
         projectile.onAnimationTick(step);
         let hit = this.test(projectile.position) && world;
-        if (!hit && i === 0) {
+        if (!hit && i !== 0) {
           hit = targets.find((target) => (
-            target.visible && projectile.position.distanceTo(target.position) < 0.2
+            target.visible && projectile.position.distanceTo(target.head || target.position) < target.scale.x
           ));
         }
-        if (hit || projectile.distance > 100) {
+        if (hit || projectile.distance > 200) {
           this.remove(projectile);
           projectiles.splice(p, 1);
+          pools.projectiles.push(projectile);
           p--;
           l--;
           if (hit) {
+            const point = hit === world ? projectile.position : hit.position;
             this.blast({
               color: hit.color || projectile.color,
-              origin: projectile.position,
+              origin: point,
               radius: 4 + Math.floor(Math.random() * 3),
             });
             this.dispatchEvent({
@@ -47,7 +53,7 @@ class Projectiles extends Group {
               color: hit.color || projectile.color,
               object: hit,
               owner: projectile.owner,
-              point: projectile.position,
+              point,
             });
           }
           break;
@@ -59,6 +65,7 @@ class Projectiles extends Group {
       if (explosion.onAnimationTick(delta)) {
         this.remove(explosion);
         explosions.splice(i, 1);
+        pools.explosions.push(explosion);
         i--;
         l--;
       }
@@ -66,18 +73,28 @@ class Projectiles extends Group {
   }
 
   blast({ color, origin, radius }) {
-    const { explosions, sfx, world } = this;
+    const { explosions, pools, sfx, world } = this;
     world.updateVolume(origin, radius, 0, _air);
     sfx.playAt('blast', origin, 'lowpass', 1000 + Math.random() * 1000);
-    const explosion = new Explosion({ color, origin });
+    const explosion = pools.explosions.pop() || new Explosion();
+    explosion.color.copy(color);
+    explosion.position.copy(origin);
+    explosion.rotation.set((Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2, (Math.random() - 0.5) * Math.PI * 2);
+    explosion.updateMatrix();
+    explosion.step = 0;
     explosions.push(explosion);
     this.add(explosion);
   }
 
-  shoot({ color, direction, origin, owner }) {
-    const { projectiles, sfx } = this;
+  shoot({ color, direction, offset = 1, origin, owner }) {
+    const { pools, projectiles, sfx } = this;
     sfx.playAt('shot', _voxel.addVectors(origin, direction), 'highpass', 1000 + Math.random() * 1000);
-    const projectile = new Projectile({ color, direction, origin, owner });
+    const projectile = pools.projectiles.pop() || new Projectile();
+    projectile.color.copy(color);
+    projectile.direction.copy(direction);
+    projectile.distance = 0;
+    projectile.position.copy(origin).addScaledVector(direction, offset);
+    projectile.owner = owner;
     projectiles.push(projectile);
     this.add(projectile);
   }

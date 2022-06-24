@@ -35,25 +35,25 @@ class Foe extends Mesh {
         return geometry;
       };
       if (model < 3) {
-        push(new IcosahedronGeometry(0.05, 2));
+        push(new IcosahedronGeometry(0.5, 3));
       } else {
-        push(new TorusGeometry(0.035, 0.015, 8, 16));
+        push(new TorusGeometry(0.35, 0.15, 8, 16));
       }
       const wings = model % 3;
       switch (wings) {
         case 0:
           for (let x = -1; x <= 1; x += 2) {
-            const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16, true), 0.75);
+            const geometry = push(new ConeGeometry(0.3, 1, 8, 16, true), 0.75);
             geometry.rotateZ(Math.PI * 0.5 * -x);
-            geometry.translate(0.075 * x, 0, 0);
+            geometry.translate(0.75 * x, 0, 0);
           }
           break;
         case 1:
         case 2: 
           for (let x = -1; x <= 1; x += 2) {
-            const geometry = push(new ConeGeometry(0.03, 0.1, 8, 16, true), 0.75);
+            const geometry = push(new ConeGeometry(0.3, 1, 8, 16, true), 0.75);
             geometry.rotateZ((wings === 2 ? Math.PI : 0) + Math.PI * 0.25 * x * (wings === 2 ? 1 : -1));
-            geometry.translate(0.05 * x, 0.06 * (wings === 2 ? -1 : 1), 0);
+            geometry.translate(0.5 * x, 0.6 * (wings === 2 ? -1 : 1), 0);
           }
           break;
       }
@@ -81,10 +81,10 @@ class Foe extends Mesh {
           '#include <begin_vertex>',
           [
             '#include <begin_vertex>',
-            'grid = position.xz / 0.02;',
-            'float d = sin(time + (position.x + position.y) * 100.0) * 0.05;',
+            'grid = position.xz / 0.2;',
+            'float d = sin(time + (position.x + position.y) * 10.0) * 0.05;',
             'transformed.xyz *= 1.0 + d;',
-            'transformed.y += sin(time * 2.0) * (position.x * position.x);',
+            'transformed.y += sin(time * 2.0) * (position.x * position.x * 0.1);',
           ].join('\n')
         ),
       fragmentShader: fragmentShader

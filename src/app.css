@@ -106,3 +106,28 @@ canvas {
   border-color: #fff;
   border-color: rgba(255, 255, 255, 0.7);
 }
+
+#vr {
+  display: none;
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  opacity: 0.4;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 4rem;
+  height: 4rem;
+  background: #333;
+  border: 1px solid #222;
+  border-radius: 4px;
+}
+
+#vr.enabled {
+  display: flex;
+}
+
+#hud, #info, #ribbon, #vr {
+  z-index: 10000;
+}

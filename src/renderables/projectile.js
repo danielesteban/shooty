@@ -1,15 +1,17 @@
 import {
   BufferAttribute,
+  Color,
   IcosahedronGeometry,
   Mesh,
   ShaderLib,
   ShaderMaterial,
   UniformsUtils,
+  Vector3,
 } from 'three';
 
 class Projectile extends Mesh {
   static setupGeometry() {
-    const geometry = new IcosahedronGeometry(0.05, 2);
+    const geometry = new IcosahedronGeometry(0.25, 3);
     geometry.deleteAttribute('normal');
     geometry.deleteAttribute('uv');
     const color = new BufferAttribute(new Float32Array(geometry.getAttribute('position').count * 3), 3);
@@ -35,7 +37,7 @@ class Projectile extends Mesh {
     });
   }
 
-  constructor({ color, direction, origin, owner }) {
+  constructor() {
     if (!Projectile.geometry) {
       Projectile.setupGeometry();
     }
@@ -43,11 +45,8 @@ class Projectile extends Mesh {
       Projectile.setupMaterial();
     }
     super(Projectile.geometry, Projectile.material);
-    this.color = color;
-    this.owner = owner;
-    this.position.copy(origin).add(direction);
-    this.direction = direction.clone();
-    this.distance = 0;
+    this.color = new Color();
+    this.direction = new Vector3();
   }
 
   onAnimationTick(step) {

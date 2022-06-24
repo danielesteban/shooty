@@ -16,9 +16,8 @@ class Powerups extends Group {
     const { children } = this;
     children.forEach((powerup, i) => {
       if (!powerup.visible || powerup.position.z > anchor.z) {
-        powerup.position.set((Math.random() - 0.5), Math.random(), 0).multiplyScalar(2).add(anchor);
-        powerup.position.y += 0.5;
-        powerup.position.z -= 16 + Math.floor(Math.random() * 16) * 4;
+        powerup.position.set((Math.random() - 0.5), Math.random() * 0.75, 0).multiplyScalar(8).add(anchor);
+        powerup.position.z -= 128 + Math.floor(Math.random() * 32) * 8;
         powerup.baseY = powerup.position.y;
         powerup.visible = true;
       }

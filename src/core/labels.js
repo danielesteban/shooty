@@ -5,17 +5,18 @@ class Labels extends Group {
   constructor() {
     super();
     this.matrixAutoUpdate = false;
+    this.pool = [];
   }
     
   onAnimationTick(delta) {
-    const { children } = this;
+    const { children, pool } = this;
     for (let i = 0, l = children.length; i < l; i++) {
       const label = children[i];
-      label.position.y += delta * 0.1;
+      label.position.y += delta;
       label.material[1].opacity -= delta;
       if (label.material[1].opacity <= 0) {
         this.remove(label);
-        label.dispose();
+        pool.push(label);
         i--;
         l--;
       }
@@ -23,8 +24,13 @@ class Labels extends Group {
   }
 
   spawn({ color, position, text }) {
-    const label = new Label({ color, size: 0.1, text });
+    const { pool } = this;
+    const label = pool.pop() || new Label({ size: 1 });
+    label.color = color;
+    label.material[1].opacity = 1;
     label.position.copy(position);
+    label.text = text;
+    label.sync();
     this.add(label);
   }
 }

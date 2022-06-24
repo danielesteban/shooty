@@ -26,10 +26,12 @@ class ChunkMaterial extends ShaderMaterial {
           [
             '#include <begin_vertex>',
             'vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;',
-            'grid = wp.xz / 0.05;',
-            'float d = sin(time + round(max(wp.y, 0.0) * wp.x));',
-            'transformed.x += d;',
-            'transformed.z -= d;',
+            'grid = wp.xz / 0.5;',
+            'if (wp.y > 0.5) {',
+            '  float d = sin(time + round(wp.y * (wp.x - 8.0) * 0.01)) * 0.5;',
+            '  transformed.x += d;',
+            '  transformed.z -= d;',
+            '}',
           ].join('\n')
         ),
       fragmentShader: fragmentShader

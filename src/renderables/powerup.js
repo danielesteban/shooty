@@ -5,6 +5,7 @@ import {
   ShaderLib,
   Shape,
   UniformsUtils,
+  Vector3,
 } from 'three';
 
 class Powerup extends Mesh {
@@ -22,7 +23,7 @@ class Powerup extends Mesh {
     geometry.deleteAttribute('normal');
     geometry.deleteAttribute('uv');
     geometry.rotateX(Math.PI);
-    geometry.scale(0.001, 0.001, 0.001);
+    geometry.scale(0.005, 0.005, 0.005);
     geometry.center();
     Powerup.geometry = geometry;
   }
@@ -47,8 +48,8 @@ class Powerup extends Mesh {
           '#include <begin_vertex>',
           [
             '#include <begin_vertex>',
-            'grid = position / 0.02;',
-            'transformed.xyz *= 1.05 + sin(time + (position.y + position.z) * 100.0) * 0.05;',
+            'grid = position / 0.1;',
+            'transformed.xyz *= 1.05 + sin(time + (position.y + position.z) * 10.0) * 0.05;',
           ].join('\n')
         ),
       fragmentShader: fragmentShader
@@ -73,7 +74,7 @@ class Powerup extends Mesh {
         ),
       fog: true,
     });
-    Powerup.material.uniforms.diffuse.value.setHex(0xFF0A0A);
+    Powerup.material.uniforms.diffuse.value.setHex(0xEE0A0A);
   }
 
   constructor() {

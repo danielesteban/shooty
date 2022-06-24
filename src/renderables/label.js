@@ -14,7 +14,7 @@ class Label extends Text {
     this.material[1].side = FrontSide;
     this.material[1].transparent = true;
     this.text = text;
-    this.sync();
+    if (text) this.sync();
   }
 }
 

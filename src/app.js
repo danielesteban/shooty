@@ -22,14 +22,15 @@ import SFX from './core/sfx.js';
 import Worker from './core/worker.js';
 import ChunkMaterial from './renderables/chunkmaterial.js';
 import Dome from './renderables/dome.js';
+import Effect from './renderables/effect.js';
 import Label from './renderables/label.js';
 import Starfield from './renderables/starfield.js';
 import Worldgen from 'web-worker:./workers/worldgen.js';
 import './app.css';
 
-const camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);
+const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
 const postprocessing = new PostProcessing({ samples: 2 });
-const renderer = new WebGLRenderer();
+const renderer = new WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: false });
 renderer.outputEncoding = sRGBEncoding;
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('renderer').appendChild(renderer.domElement);
@@ -40,13 +41,24 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 }, false);
 
+const background = {};
+background.linear = (new Color(0.3, 0.4, 0.6)).convertSRGBToLinear().multiplyScalar(0.02);
+background.srgb = background.linear.clone().convertLinearToSRGB();
 const scene = new Scene();
-scene.background = (new Color(0.3, 0.4, 0.6)).convertSRGBToLinear().multiplyScalar(0.02);
-scene.fog = new FogExp2(scene.background, 0.2);
+scene.background = background.linear;
+scene.fog = new FogExp2(background.linear, 0.025);
+
+const player = new Group();
+player.head = new Vector3();
+player.position.set(8, 2, 0);
+camera.position.set(0, 1.6, 0);
+camera.rotation.set(0, 0, 0, 'YXZ');
+player.add(camera);
+scene.add(player);
 
 const dome = new Dome();
 scene.add(dome);
-Dome.material.uniforms.diffuse.value = scene.background;
+Dome.material.uniforms.diffuse.value = background.linear;
 
 const starfield = new Starfield();
 scene.add(starfield);
@@ -54,18 +66,18 @@ scene.add(starfield);
 const world = new World({
   chunkMaterial: new ChunkMaterial(),
   chunkSize: 32,
-  renderRadius: 5,
+  renderRadius: 4,
   worldgen: (chunkSize) => new Worker({
     options: { chunkSize, seed: Math.floor(Math.random() * 2147483647) },
     script: Worldgen,
   }), 
 });
 world.renderGrid = world.renderGrid.filter(({ x, y, z }) => (
-  x >= -4 && x <= 4
+  x >= -3 && x <= 3
   && y >= -1 && y <= 3
-  && z >= -4 && z <= 4
+  && z >= -3 && z <= 3
 ));
-world.scale.setScalar(0.05);
+world.scale.setScalar(0.5);
 scene.add(world);
 
 const hud = new Hud();
@@ -73,40 +85,37 @@ const hud = new Hud();
 const labels = new Labels();
 scene.add(labels);
 
-const sfx = new SFX(camera);
+const sfx = new SFX();
 scene.add(sfx);
 
 const projectiles = new Projectiles({ sfx, world });
 scene.add(projectiles);
 
-const foes = new Foes({ count: 16, projectiles });
+const foes = new Foes({ count: 12, projectiles });
 scene.add(foes);
 
 const powerups = new Powerups({ count: 4, projectiles });
 scene.add(powerups);
 
-const gameOver = new Label({ size: 0.5, text: 'Game Over' });
+const gameOver = new Label({ size: 4, text: 'Game Over' });
 gameOver.visible = false;
 scene.add(gameOver);
 
-const menu = new Group();
+const menu = new Label({ size: 6, text: 'Shooty' });
 scene.add(menu);
-{
-  const title = new Label({ size: 0.8, text: 'Shooty' });
-  menu.add(title);
-  const play = new Label({ size: 0.1, text: 'Click to play' });
-  play.position.set(0, -0.8, 1);
-  menu.add(play);
-}
 
+const hurt = new Effect({
+  color: 0xFF0000,
+  desktop: postprocessing.screen.material.uniforms.hurt,
+});
+scene.add(hurt);
 let pauseTimer = 0;
-const hurt = postprocessing.screen.material.uniforms.hurt;
 projectiles.addEventListener('hit', ({ color, object, owner, point }) => {
   if (gameOver.visible) {
     return;
   }
-  if (object === camera) {
-    hurt.value = 0.5;
+  if (object === player) {
+    hurt.update(0.5);
     hud.updateHealth(hud.health.value - 1);
     if (hud.health.value === 0) {
       gameOver.visible = true;
@@ -114,7 +123,7 @@ projectiles.addEventListener('hit', ({ color, object, owner, point }) => {
     }
   } else if (object.isFoe || object.isPowerup) {
     object.visible = false;
-    if (owner === camera) {
+    if (owner === player) {
       const score = object.isFoe ? 100 : 50;
       labels.spawn({ color, position: point, text: `${score}` });
       hud.updateScore(hud.score.value + score);
@@ -124,17 +133,75 @@ projectiles.addEventListener('hit', ({ color, object, owner, point }) => {
     }
   }
 });
-projectiles.targets.push(camera);
+projectiles.targets.push(player);
 
-camera.position.set(1, 0.8, 0);
-camera.rotation.set(0, 0, 0, 'YXZ');
+const input = new Input(renderer);
+const color = new Color();
+const direction = new Vector3();
+const origin = new Vector3();
+const lastShot = new WeakMap();
+
+const debounce = (object, time) => {
+  if (time >= (lastShot.get(object) || 0) + 0.06) {
+    lastShot.set(object, time);
+    return true;
+  }
+  return false;
+};
+
 const restart = () => {
   gameOver.visible = menu.visible = false;
-  camera.position.z = 0;
+  player.position.z = 0;
   hud.reset();
   foes.reset();
   powerups.reset();
   world.reset();
+};
+
+const processInput = (isPaused, delta, time) => {
+  const firing = [];
+
+  input.onAnimationTick(delta);
+
+  if (renderer.xr.isPresenting) {
+    input.controllers.forEach((controller) => {
+      if (!controller.hand) {
+        return;
+      }
+      if (controller.buttons.secondaryDown) {
+        Promise.resolve().then(() => xr.getSession().end());
+      }
+      if (controller.buttons.trigger && debounce(controller, time)) {
+        lastShot.set(controller, time);
+        firing.push({ object: controller });
+      }
+    });
+  } else if (input.buttons.primary && debounce(camera, time)) {
+    firing.push({ object: camera, offset: 8, pointer: input.pointer });
+  }
+
+  if (isPaused) {
+    pauseTimer -= delta;
+    if (firing.length && pauseTimer <= 0) {
+      restart();
+    }
+  } else {
+    firing.forEach(({ object, offset, pointer }) => {
+      origin.setFromMatrixPosition(object.matrixWorld);
+      if (pointer) {
+        direction.set(pointer.x, pointer.y, 0.5).unproject(object).sub(origin).normalize();
+      } else {
+        object.getWorldDirection(direction).negate();
+      }
+      projectiles.shoot({
+        color,
+        direction,
+        offset,
+        origin,
+        owner: player,
+      });
+    });
+  }
 };
 
 const clock = new Clock();
@@ -150,56 +217,53 @@ const fps = {
 };
 
 const anchor = new Vector3();
-const color = new Color();
-const input = new Input({ target: renderer.domElement });
 const offset = new Vector3(0, 0, world.renderRadius * world.chunkSize * -1).multiply(world.scale);
-
 renderer.setAnimationLoop(() => {
   const delta = clock.getDelta();
   const time = clock.oldTime / 1000;
   const isPaused = gameOver.visible || menu.visible;
 
   if (isPaused) {
-    anchor.set(0, 0.7 + Math.sin(time * 0.75) * 0.2, -3).add(camera.position);
+    anchor.set(0, 4 + Math.sin(time * 0.75), -16).add(player.position);
     gameOver.position.copy(anchor);
     menu.position.copy(anchor);
   } else {
-    camera.position.z -= delta;
+    player.position.z -= delta * 10;
   }
-  camera.rotation.y = MathUtils.damp(camera.rotation.y, input.pointer.x * Math.PI * -0.1, 5, delta);
-  camera.rotation.x = MathUtils.damp(camera.rotation.x, input.pointer.y * Math.PI * 0.125, 5, delta);
-  
-  dome.position.copy(camera.position);
-  dome.position.y = 0;
-  starfield.position.copy(dome.position);
+  dome.position.copy(player.position);
+  starfield.position.copy(player.position);
 
-  foes.onAnimationTick(dome.position, camera.position, isPaused, delta, time);
+  player.updateMatrixWorld();
+  if (renderer.xr.isPresenting) {
+    renderer.xr.updateCamera(camera);
+    renderer.xr.getCamera().getWorldPosition(player.head);
+  } else {
+    camera.getWorldPosition(player.head);
+    camera.rotation.y = MathUtils.damp(camera.rotation.y, input.pointer.x * Math.PI * -0.1, 5, delta);
+    camera.rotation.x = MathUtils.damp(camera.rotation.x, input.pointer.y * Math.PI * 0.2, 5, delta);
+  }
+
+  foes.onAnimationTick(player.position, player.head, isPaused, delta, time);
   labels.onAnimationTick(delta);
-  powerups.onAnimationTick(dome.position, time);
+  powerups.onAnimationTick(player.position, time);
   projectiles.onAnimationTick(delta);
+  processInput(isPaused, delta, time);
 
-  if (isPaused) {
-    pauseTimer -= delta;
-    if (input.isFiring && pauseTimer <= 0) {
-      input.isFiring = false;
-      restart();
-    }
-  } else if (input.onAnimationTick(camera, time)) {
-    projectiles.shoot({
-      color,
-      direction: input.direction,
-      origin: input.origin,
-      owner: camera,
-    });
-  }
-
-  if (hurt.value > 0) {
-    hurt.value = Math.max(hurt.value - delta, 0);
-  }
+  hurt.onAnimationTick(player.head, renderer.xr.isPresenting, delta);
   world.chunkMaterial.uniforms.time.value = time;
-  world.updateChunks(anchor.addVectors(camera.position, offset));
-  postprocessing.render(renderer, scene, camera);
+  world.updateChunks(anchor.addVectors(player.position, offset));
+  if (renderer.xr.isPresenting) {
+    renderer.render(scene, camera);
+  } else {
+    postprocessing.render(renderer, scene, camera);
+  }
 
+  if (sfx.listener) {
+    (renderer.xr.isPresenting ? renderer.xr.getCamera() : camera)
+      .matrixWorld
+      .decompose(sfx.listener.position, sfx.listener.quaternion, sfx.listener.scale);
+    sfx.listener.updateMatrixWorld();
+  }
   if (!isPaused) {
     hud.updateTimer(time);
   }
@@ -214,3 +278,55 @@ renderer.setAnimationLoop(() => {
     fps.count = 0;
   }
 });
+
+if (navigator.xr) {
+  const onEnterVR = () => {
+    scene.background = scene.fog.color = background.srgb;
+    input.controllers.forEach((controller) => (
+      player.add(controller)
+    ));
+  };
+  const onExitVR = () => {
+    scene.background = scene.fog.color = background.linear;
+    camera.position.set(0, 1.6, 0);
+    camera.rotation.set(0, 0, 0, 'YXZ');
+    input.controllers.forEach((controller) => (
+      player.remove(controller)
+    ));
+  };
+  renderer.xr.enabled = true;
+  renderer.xr.cameraAutoUpdate = false;
+  navigator.xr.isSessionSupported('immersive-vr').then((supported) => {
+    if (!supported) {
+      return;
+    }
+    const vr = document.getElementById('vr');
+    const [label] = vr.getElementsByTagName('span');
+    vr.classList.add('enabled');
+    label.innerText = 'Enter VR';
+    let currentSession = null;
+    const onSessionEnded = () => {
+      currentSession.removeEventListener('end', onSessionEnded);
+      currentSession = null;
+      label.innerText = 'Enter VR';
+      onExitVR();
+    };
+    vr.addEventListener('click', () => {
+      if (currentSession) {
+        currentSession.end();
+        return;
+      }
+      navigator.xr
+        .requestSession('immersive-vr', { optionalFeatures: ['local-floor'] })
+        .then((session) => {
+          session.addEventListener('end', onSessionEnded);
+          renderer.xr.setSession(session)
+            .then(() => {
+              currentSession = session;
+              label.innerText = 'Exit VR';
+              onEnterVR();
+            });
+        });
+    }, false);
+  });
+}

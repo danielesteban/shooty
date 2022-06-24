@@ -108,7 +108,7 @@ class PostProcessing {
           '  vec3 color = texture(colorTexture, uv).rgb;',
           '  float depth = -perspectiveDepthToViewZ(texture(depthTexture, uv).r, cameraNear, cameraFar);',
           '  float vignette = smoothstep(-0.2, 0.2, 0.4 - distance(uv, vec2(0.5, 0.5)));',
-          '  return mix(color, blur, clamp(depth / 8.0, 0.0, 1.0) * 0.6 - vignette * 0.3);',
+          '  return mix(color, blur, clamp(depth / 16.0, 0.0, 1.0) * 0.6 - vignette * 0.3);',
           '}',
           'void main() {',
           '  fragColor = vec4(LinearTosRGB(mix(composite(uv), vec3(1.0, 0.0, 0.0), hurt)), 1.0);',

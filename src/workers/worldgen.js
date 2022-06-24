@@ -31,13 +31,20 @@ const onData = ({ data: { x, y, z } }) => {
   };
   if (
     y >= -1 && y <= 3
-    && x >= -4 && x <= 4
+    && x >= -3 && x <= 3
   ) {
     const h = chunkSize * 3;
     const wy = y * chunkSize;
     if (y === -1) {
-      box(0, 0, 0, chunkSize, chunkSize, chunkSize, (x, y, z, cx, cy, cz) => {
-        return [192, 2, 3, 6];
+      box(0, 0, 0, chunkSize, chunkSize, chunkSize, () => [192, 2, 3, 6]);
+    }
+    if (y === 0 && x === 0) {
+      const wz = z * chunkSize;
+      box(0, 0, 0, chunkSize, 1, chunkSize, (x, y, z, cx, cy, cz) => {
+        const d = Math.sqrt((x - chunkSize * 0.5 + 0.5) ** 2 + y ** 2) / (chunkSize * 0.5) * Math.abs(Math.sin((wz + z) / (chunkSize * 0.5)));
+        const a = ((wy + 8 + cy) / h);
+        const l = 255 * a * d;
+        return [d * 255, l * 0.5, l * 0.5, l];
       });
     }
     if (y >= 0 && x !== 0) {
@@ -46,9 +53,9 @@ const onData = ({ data: { x, y, z } }) => {
         const s = 12 * (1 - n * 0.7);
         const bh = Math.min(h * n - wy, chunkSize);
         box(
-          Math.floor(chunkSize * 0.5 - s + Math.cos(n) * 6),
+          Math.floor(chunkSize * 0.5 - s),
           0,
-          Math.floor(chunkSize * 0.5 - s + Math.sin(n) * 6),
+          Math.floor(chunkSize * 0.5 - s),
           Math.floor(s * 2),
           bh,
           Math.floor(s * 2),

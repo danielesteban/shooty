@@ -7,7 +7,7 @@ import {
 } from 'three';
 
 class SFX extends Group {
-  constructor(head) {
+  constructor() {
     super();
     const loader = new AudioLoader();
     this.pools = {};
@@ -27,7 +27,6 @@ class SFX extends Group {
     ])
       .then(([ambient, blast, shot]) => {
         const listener = new AudioListener();
-        head.add(listener);
         const getPool = (buffer, pool) => (
          Array.from({ length: pool }, () => {
             const sound = new PositionalAudio(listener);
