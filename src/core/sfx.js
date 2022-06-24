@@ -34,7 +34,7 @@ class SFX extends Group {
             sound.setBuffer(buffer);
             sound.filter = new BiquadFilterNode(listener.context);
             sound.setFilter(sound.filter);
-            sound.setRefDistance(8);
+            sound.setRefDistance(32);
             sound.setVolume(0.4);
             this.add(sound);
             return sound;
